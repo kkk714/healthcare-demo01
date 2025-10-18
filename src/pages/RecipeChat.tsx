@@ -69,21 +69,21 @@ ${getHealthContext()}
 - 营养价值（热量、蛋白质、含碘量）
 - 注意事项`;
 
-      const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+      const chatMessages = [
+        ...messages.filter(m => m.role !== 'assistant' || messages.indexOf(m) >= messages.length - 5),
+        { role: 'user', content: input }
+      ];
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recipe-chat`, {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer sk-lpcrbzvlnrsrgfwqfgdlnzkvvhcihiykwdfcijvqfnpgaykw',
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          model: 'Qwen/Qwen2.5-7B-Instruct',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages.filter(m => m.role !== 'assistant' || messages.indexOf(m) >= messages.length - 5),
-            { role: 'user', content: input }
-          ],
-          temperature: 0.7,
-          max_tokens: 2000,
+          messages: chatMessages,
+          systemPrompt,
+          healthContext: getHealthContext(),
         }),
       });
 
