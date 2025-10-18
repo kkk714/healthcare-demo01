@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useHealthRecords } from "@/hooks/useHealthRecords";
 
 const AddRecord = () => {
   const navigate = useNavigate();
+  const { addThyroidRecord, addMetric } = useHealthRecords();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     ft3: "",
@@ -21,8 +23,34 @@ const AddRecord = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.ft3 && formData.ft4 && formData.tsh) {
+      addThyroidRecord({
+        date: formData.date,
+        ft3: parseFloat(formData.ft3),
+        ft4: parseFloat(formData.ft4),
+        tsh: parseFloat(formData.tsh),
+      });
+    }
+    
+    if (formData.heartRate) {
+      addMetric({
+        date: formData.date,
+        type: 'heartRate',
+        value: parseFloat(formData.heartRate),
+      });
+    }
+    
+    if (formData.weight) {
+      addMetric({
+        date: formData.date,
+        type: 'weight',
+        value: parseFloat(formData.weight),
+      });
+    }
+    
     toast.success("记录已保存");
-    navigate("/records");
+    navigate("/");
   };
 
   const handleChange = (field: string, value: string) => {

@@ -3,18 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Activity, Heart, Scale, Pill, TrendingUp, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { useHealthRecords } from "@/hooks/useHealthRecords";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Dashboard = () => {
-  const recentMetrics = [
-    { date: "2025-01-15", ft3: 4.2, ft4: 15.3, tsh: 0.8 },
-    { date: "2025-01-08", ft3: 4.8, ft4: 16.2, tsh: 0.6 },
-    { date: "2025-01-01", ft3: 5.1, ft4: 17.5, tsh: 0.4 },
-  ];
+  const { thyroidRecords, otherMetrics, updateMedicationCheck, getTodayMedicationCheck } = useHealthRecords();
+  const todayCheck = getTodayMedicationCheck();
+  
+  const recentMetrics = thyroidRecords.slice(0, 3);
+  
+  const getLatestMetric = (type: 'heartRate' | 'weight') => {
+    const metric = otherMetrics.find(m => m.type === type);
+    return metric?.value.toString() || '--';
+  };
+
+  const getMedicationProgress = () => {
+    const total = 3;
+    const checked = [todayCheck.morning, todayCheck.afternoon, todayCheck.evening].filter(Boolean).length;
+    return `${checked}/${total}`;
+  };
 
   const quickStats = [
-    { icon: Heart, label: "心率", value: "78", unit: "bpm", color: "text-chart-2" },
-    { icon: Scale, label: "体重", value: "65.5", unit: "kg", color: "text-chart-1" },
-    { icon: Pill, label: "今日用药", value: "2/3", unit: "次", color: "text-accent" },
+    { icon: Heart, label: "心率", value: getLatestMetric('heartRate'), unit: "bpm", color: "text-chart-2" },
+    { icon: Scale, label: "体重", value: getLatestMetric('weight'), unit: "kg", color: "text-chart-1" },
+    { icon: Pill, label: "今日用药", value: getMedicationProgress(), unit: "次", color: "text-accent" },
   ];
 
   return (
@@ -54,18 +66,22 @@ const Dashboard = () => {
         </div>
 
         <Card className="bg-card p-5 shadow-md">
-          <div className="space-y-4">
-            {recentMetrics.map((metric, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <div className="text-sm text-muted-foreground">{metric.date}</div>
-                <div className="flex gap-4 text-sm">
-                  <span className="text-chart-1 font-medium">FT3: {metric.ft3}</span>
-                  <span className="text-chart-2 font-medium">FT4: {metric.ft4}</span>
-                  <span className="text-chart-3 font-medium">TSH: {metric.tsh}</span>
+          {recentMetrics.length > 0 ? (
+            <div className="space-y-4">
+              {recentMetrics.map((metric, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">{metric.date}</div>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-chart-1 font-medium">FT3: {metric.ft3}</span>
+                    <span className="text-chart-2 font-medium">FT4: {metric.ft4}</span>
+                    <span className="text-chart-3 font-medium">TSH: {metric.tsh}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-muted-foreground py-4">暂无记录</div>
+          )}
           <Link to="/records/add">
             <Button className="w-full mt-4 bg-gradient-primary hover:opacity-90 transition-opacity">
               <Plus className="mr-2 h-4 w-4" />
@@ -86,7 +102,34 @@ const Dashboard = () => {
               </div>
               <span className="text-foreground">早餐后服药</span>
             </div>
-            <input type="checkbox" className="h-5 w-5 rounded border-border" />
+            <Checkbox 
+              checked={todayCheck.morning}
+              onCheckedChange={(checked) => updateMedicationCheck(todayCheck.date, 'morning', checked as boolean)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Pill className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-foreground">午餐后服药</span>
+            </div>
+            <Checkbox 
+              checked={todayCheck.afternoon}
+              onCheckedChange={(checked) => updateMedicationCheck(todayCheck.date, 'afternoon', checked as boolean)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Pill className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-foreground">晚餐后服药</span>
+            </div>
+            <Checkbox 
+              checked={todayCheck.evening}
+              onCheckedChange={(checked) => updateMedicationCheck(todayCheck.date, 'evening', checked as boolean)}
+            />
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -95,7 +138,7 @@ const Dashboard = () => {
               </div>
               <span className="text-foreground">饮食打卡</span>
             </div>
-            <input type="checkbox" className="h-5 w-5 rounded border-border" />
+            <Checkbox />
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -104,7 +147,7 @@ const Dashboard = () => {
               </div>
               <span className="text-foreground">心率检测</span>
             </div>
-            <input type="checkbox" className="h-5 w-5 rounded border-border" />
+            <Checkbox />
           </div>
           <Link to="/reminders">
             <Button variant="outline" className="w-full mt-2">

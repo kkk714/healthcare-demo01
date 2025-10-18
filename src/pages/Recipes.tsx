@@ -57,6 +57,23 @@ const Recipes = () => {
         <p className="text-primary-foreground/90">科学营养，健康饮食</p>
       </div>
 
+      {/* AI Assistant Button */}
+      <div className="px-6 mt-6">
+        <Link to="/recipes/chat">
+          <Card className="bg-gradient-primary p-5 shadow-md hover:opacity-90 transition-opacity cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <ChefHat className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1 text-white">
+                <h3 className="font-bold text-lg">AI 饮食助手</h3>
+                <p className="text-sm text-white/90">告诉我您想吃什么，我来推荐适合您的食谱</p>
+              </div>
+            </div>
+          </Card>
+        </Link>
+      </div>
+
       {/* Search */}
       <div className="px-6 mt-6">
         <div className="relative">
